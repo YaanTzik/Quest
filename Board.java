@@ -1,6 +1,9 @@
 import java.util.Random;
 import javafx.util.Pair;
-public class Board{
+import java.util.ArrayList;
+import java.util.List;
+
+public class Board implements BoardInterface {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -21,146 +24,273 @@ public class Board{
 
     private int Height;
     private int Width;
-    private Tile[][] PlayArea ;
-    private Random rd;
-    // private (int)
-    private Pair<Integer,Integer> Location;
+    private Tile[][] PlayArea;
+    // We use Key Value Pairs to keep track of each moving entity on the board.
+    private ArrayList<Coordinates> HeroLocations;
+    private ArrayList<Coordinates> MonsterLocations;
 
-    
-    public Board(int r, int c){
+    // Dead Rows
+    private int dead1;
+    private int dead2;
+
+    private Random rd;
+
+    // private HeroParty heroParty;
+    // private MonsterParty monsterParty;
+
+    public Board(int r, int c) {
         this.Height = r;
-        this.Width =c;
+        this.Width = c;
         PlayArea = new Tile[r][c];
+        // We portion the unplayable tiles at the start for quick reference and so it is
+        // general enough to play with any number of columns
+        // Ideally we want all lanes to be equal but if the requested width is not
+        // congruent with this desire the we handle the input by
+        // making the bottom lane bigger than the rest if 1 lane is bigger than the
+        // other 2 or make the bottom lane smaller by 1.
+        // Inherently this shouldn't make a large difference. I haven't played Lol much
+        // but in dota2 top bottom and middle lanes all have
+        // differing sizes and I feel this makes the game more dynamic
+        int laneWidth;
+
+        if ((c - 2) % 3 == 2) {
+            laneWidth = (c - 4) / 2;
+            dead1 = laneWidth;
+            dead2 = laneWidth * 2 + 1;
+        } else {
+            // We process lane logic similiarly when c-2%3 == 1 and 0
+            laneWidth = (c - 2) / 3;
+            dead1 = laneWidth;
+            dead2 = laneWidth * 2 + 1;
+        }
+
         this.rd = new Random();
-        // Heroes start at the coordinates(0,0);
-        Location = new Pair<Integer,Integer>(0,0);
+
+        // Initializing the starting positions of Heros and Monsters.
+        // Monsters start at top left of the lane they are in.
+        Coordinates M1 = new Coordinates(0, 0);
+        Coordinates M2 = new Coordinates(0, dead1 + 1);
+        Coordinates M3 = new Coordinates(0, dead2 + 1);
+        MonsterLocations = new ArrayList<Coordinates>();
+        MonsterLocations.add(M1);
+        MonsterLocations.add(M2);
+        MonsterLocations.add(M3);
+
+        // Heros will start at the bottom left of the lane they are in.
+        Coordinates H1 = new Coordinates(r - 1, 0);
+        Coordinates H2 = new Coordinates(r - 1, dead1 + 1);
+        Coordinates H3 = new Coordinates(r - 1, dead2 + 1);
+        HeroLocations = new ArrayList<Coordinates>();
+        HeroLocations.add(H1);
+        HeroLocations.add(H2);
+        HeroLocations.add(H3);
+
+        // Randomly fill boards with tile types
         fillBoard();
 
     }
 
-    public Pair<Integer,Integer> getLocation(){
-        return Location;
-    }
-    public int getHeight(){
+    public int getHeight() {
         return Height;
     }
-    public int getWidth(){
+
+    public int getWidth() {
         return Width;
     }
-    private void fillBoard(){
-        for(int r = 0 ; r< Height; r++){
-            for (int c =0; c< Width; c++){
-                double roll =rd.nextDouble();
-                if (roll <= 0.3){
-                    this.PlayArea[r][c]= Tile.MARKET;
-                }
-                else if (roll< 0.8){
-                    this.PlayArea[r][c] = Tile.COMMON;
-                }
-                else{
-                    this.PlayArea[r][c] = Tile.NONPLAYABLE;
-                }
-                
-            }
-        }
-    }
-    public void Display(){
-        String s = "";
-        // s += "current location" + Location+ "\n";
-        // int tilecount = 0;
+
+    private void fillBoard() {
         for (int r = 0; r < Height; r++) {
-            s += "+";
             for (int c = 0; c < Width; c++) {
-                s += "---+";
-            }
-            s += "\n";
-            for (int c = 0; c < Width; c++) {
-                if(Location.getKey() == r && Location.getValue()==c){
-                    s+="|"+ANSI_BLUE + " H " + ANSI_RESET;
+                if (c == dead1 || c == dead2) {
+                    PlayArea[r][c] = Tile.NONPLAYABLE;
+                } else if (r == 0 || r == Width - 1) {
+                    PlayArea[r][c] = Tile.NEXUS;
+                } else {
+                    double roll = rd.nextDouble();
+                    if (roll <= 0.1)
+                        PlayArea[r][c] = Tile.BUSH;
+                    else if (roll <= 0.2)
+                        PlayArea[r][c] = Tile.KOULOU;
+                    else if (roll <= 0.3)
+                        PlayArea[r][c] = Tile.CAVE;
+                    else
+                        PlayArea[r][c] = Tile.COMMON;
                 }
-                else{
-                    // System.out.println("Row"+r);
-                    // System.out.println("Col"+c);
-                    Tile currTile = PlayArea[r][c];
-                    if (currTile == Tile.MARKET){
-                        s+= "|" +ANSI_PURPLE+ " M "+ ANSI_RESET;
-                    }
-                    else if(currTile == Tile.COMMON){
-                        s+= "|" +ANSI_GREEN_BACKGROUND+ "   "+ ANSI_RESET;
-                    } 
-                    else{
-                        s+= "|" +ANSI_RED+ " X "+ ANSI_RESET;
-                    }
-                
-                }
-                
-            }
-            s += "|\n";
-        }
-        s += "+";
-        for (int c = 0; c < Width; c++) {
-            s += "---+";
-        }
-        s += "\n";
-        // System.out.println("Tilecount " + tilecount);
-        System.out.print(s);
 
-    }
-    public Tile MoveParty(Pair<Integer,Integer> p){
-        this.Location = p;
-        int r = p.getKey();
-        int c = p.getValue();
-        return PlayArea[r][c];
-        }
-    public Pair<Integer,Integer> convertMove(char c){
-        switch(c){
-            case'w':
-                return new Pair<Integer,Integer>(Location.getKey()-1, Location.getValue());
-            case'a':
-                return new Pair<Integer, Integer>(Location.getKey(), Location.getValue()-1);
-            case 'd':
-                return new Pair<Integer, Integer>(Location.getKey(),Location.getValue()+1);
             }
-        return new Pair<Integer, Integer>(Location.getKey() + 1, Location.getValue());
+        }
     }
 
-    
-    
-    public boolean IlegalMove(char c){
-        switch(c){
+    public boolean IlegalMove(char c) {
+        switch (c) {
             case 'w':
                 if (Location.getKey() == 0)
                     return false;
-                else if (PlayArea[Location.getKey()-1][Location.getValue()]== Tile.NONPLAYABLE)
+                else if (PlayArea[Location.getKey() - 1][Location.getValue()] == Tile.NONPLAYABLE)
                     return false;
                 else
                     return true;
             case 'a':
                 if (Location.getValue() == 0)
                     return false;
-                else if (PlayArea[Location.getKey()][Location.getValue()-1] == Tile.NONPLAYABLE)
+                else if (PlayArea[Location.getKey()][Location.getValue() - 1] == Tile.NONPLAYABLE)
                     return false;
                 else
                     return true;
             case 'd':
-                if (Location.getValue() ==Width-1)
+                if (Location.getValue() == Width - 1)
                     return false;
-                else if (PlayArea[Location.getKey()][Location.getValue() +1] == Tile.NONPLAYABLE)
+                else if (PlayArea[Location.getKey()][Location.getValue() + 1] == Tile.NONPLAYABLE)
                     return false;
                 else
                     return true;
             case 's':
-                if (Location.getKey() == Height-1)
+                if (Location.getKey() == Height - 1)
                     return false;
-                else if (PlayArea[Location.getKey()+1][Location.getValue()] == Tile.NONPLAYABLE)
+                else if (PlayArea[Location.getKey() + 1][Location.getValue()] == Tile.NONPLAYABLE)
                     return false;
                 else
                     return true;
-        
+
         }
         return false;
 
     }
-    
+
+    public void Display() {
+        List<StringBuilder> printableMap = new ArrayList<StringBuilder>();
+        for (int row = 0; row < Width * 3; row++) {
+            printableMap.add(new StringBuilder());
+            if ((row / 3) % 2 == 0) {
+                for (int col = 0; col < Width; col++) {
+                    if (row % 2 == 0) {
+                        createOutterCell(PlayArea, printableMap, row, col);
+                    } else {
+                        createInnerCell(PlayArea, printableMap, row, col);
+                    }
+
+                    if (col == Width - 1)
+                        printableMap.get(row).append("\n");
+                }
+            } else {
+                for (int col = 0; col < Width; col++) {
+                    if (row % 2 == 1) {
+                        createOutterCell(PlayArea, printableMap, row, col);
+                    } else {
+                        createInnerCell(PlayArea, printableMap, row, col);
+                    }
+
+                    if (col == Width - 1)
+                        printableMap.get(row).append("\n");
+                }
+            }
+
+            if (row % 3 == 2)
+                printableMap.get(row).append("\n");
+        }
+
+        for (int i = 0; i < Width * 3; i++) {
+            System.out.print(printableMap.get(i));
+        }
+    }
+
+    public Tile MoveHero(int HeroNum, int r, int c) {
+        HeroLocations.get(HeroNum).setCoords(r, c);
+        return PlayArea[r][c];
+    }
+
+    public Coordinates convertMove(int HeroNum, char c) {
+        Coordinates current = HeroLocations.get(HeroNum);
+        switch (c) {
+            case 'w':
+                return new Coordinates(current.getRow() - 1, current.getCol());
+            case 'a':
+                return new Coordinates(current.getRow(), current.getCol() - 1);
+            case 'd':
+                return new Coordinates(current.getRow(), current.getCol() + 1);
+        }
+        return new Coordinates(current.getRow() + 1, current.getCol());
+    }
+
+    private static void createOutterCell(Tile[][] map, List<StringBuilder> printableMap, int row, int col) {
+        switch (map[row / 3][col]) {
+            case NEXUS:
+                printableMap.get(row).append(getOuterCellStr('N', ANSI_BLUE));
+                break;
+            case COMMON:
+                printableMap.get(row).append(getOuterCellStr('P', ANSI_YELLOW));
+                break;
+            case KOULOU:
+                printableMap.get(row).append(getOuterCellStr('K', ANSI_CYAN));
+                break;
+            case CAVE:
+                printableMap.get(row).append(getOuterCellStr('C', ANSI_PURPLE));
+                break;
+            case BUSH:
+                printableMap.get(row).append(getOuterCellStr('B', ANSI_GREEN));
+                break;
+            case NONPLAYABLE:
+                printableMap.get(row).append(getOuterCellStr('I', ANSI_RED));
+                break;
+        }
+    }
+
+    private static String getOuterCellStr(char c, String Color) {
+        StringBuilder str = new StringBuilder();
+        str.append(Color);
+        for (int i = 0; i < 2; i++) {
+            str.append(c).append(" - ");
+        }
+
+        str.append(c).append("   ");
+        str.append(ANSI_RESET);
+        return str.toString();
+    }
+
+    private String getInnerCellStr(String component) {
+        return "| " + component + " |   ";
+    }
+
+    private void createInnerCell(Tile[][] map, List<StringBuilder> printableMap, int row, int col) {
+        String component = getCellComponent(row / 3, col);
+        if (map[row / 3][col] == Tile.NONPLAYABLE)
+            component = ANSI_RED + "X X X" + ANSI_RESET;
+        printableMap.get(row).append(getInnerCellStr(component));
+    }
+
+    private String getHeroComponent(Coordinates c, ArrayList<Coordinates> l) {
+        for (int i = 0; i < l.size(); i++) {
+            if (l.get(i).equals(c)) {
+                // ret = heroParty.getHero(i).MapRepresent();
+                return "H" + Integer.toString(i);
+            }
+        }
+        return "  ";
+    }
+
+    private String getMonsterComponent(Coordinates c, ArrayList<Coordinates> l) {
+        for (int i = 0; i < l.size(); i++) {
+            if (l.get(i).equals(c)) {
+                // ret = heroParty.getHero(i).MapRepresent();
+                return "M" + Integer.toString(i);
+            }
+        }
+        return "  ";
+    }
+
+    private String getCellComponent(int row, int col) {
+        Coordinates coords = new Coordinates(row, col);
+        String ret;
+        ret = getHeroComponent(coords, HeroLocations);
+        ret += " ";
+        ret += getMonsterComponent(coords, MonsterLocations);
+        return ret;
+
+    }
+
+    public static void main(String[] args) {
+        Board world = new Board(8, 8);
+        world.Display();
+    }
 
 }

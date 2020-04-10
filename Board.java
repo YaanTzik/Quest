@@ -98,6 +98,7 @@ public class Board implements BoardInterface {
         return Width;
     }
 
+    // Fills Board with Appropriate Tile Types
     private void fillBoard() {
         for (int r = 0; r < Height; r++) {
             for (int c = 0; c < Width; c++) {
@@ -121,33 +122,35 @@ public class Board implements BoardInterface {
         }
     }
 
-    public boolean IlegalMove(char c) {
+    // Checks if an Input for Moves is Illegal for the Hero of that turn.
+    public boolean IlegalMove(char c, int HeroNum) {
+        Coordinates Location = HeroLocations.get(HeroNum);
         switch (c) {
             case 'w':
-                if (Location.getKey() == 0)
+                if (Location.getRow() == 0)
                     return false;
-                else if (PlayArea[Location.getKey() - 1][Location.getValue()] == Tile.NONPLAYABLE)
+                else if (PlayArea[Location.getRow() - 1][Location.getCol()] == Tile.NONPLAYABLE)
                     return false;
                 else
                     return true;
             case 'a':
-                if (Location.getValue() == 0)
+                if (Location.getRow() == 0)
                     return false;
-                else if (PlayArea[Location.getKey()][Location.getValue() - 1] == Tile.NONPLAYABLE)
+                else if (PlayArea[Location.getRow()][Location.getCol() - 1] == Tile.NONPLAYABLE)
                     return false;
                 else
                     return true;
             case 'd':
-                if (Location.getValue() == Width - 1)
+                if (Location.getRow() == Width - 1)
                     return false;
-                else if (PlayArea[Location.getKey()][Location.getValue() + 1] == Tile.NONPLAYABLE)
+                else if (PlayArea[Location.getCol()][Location.getCol() + 1] == Tile.NONPLAYABLE)
                     return false;
                 else
                     return true;
             case 's':
-                if (Location.getKey() == Height - 1)
+                if (Location.getRow() == Height - 1)
                     return false;
-                else if (PlayArea[Location.getKey() + 1][Location.getValue()] == Tile.NONPLAYABLE)
+                else if (PlayArea[Location.getRow() + 1][Location.getCol()] == Tile.NONPLAYABLE)
                     return false;
                 else
                     return true;
@@ -194,11 +197,13 @@ public class Board implements BoardInterface {
         }
     }
 
-    public Tile MoveHero(int HeroNum, int r, int c) {
-        HeroLocations.get(HeroNum).setCoords(r, c);
-        return PlayArea[r][c];
+    // Moves Hero to Tile Specified Coordinates
+    public Tile MoveHero(int HeroNum, Coordinates c) {
+        HeroLocations.get(HeroNum).setCoords(c.getRow(), c.getCol());
+        return PlayArea[c.getRow()][c.getCol()];
     }
 
+    // Convert
     public Coordinates convertMove(int HeroNum, char c) {
         Coordinates current = HeroLocations.get(HeroNum);
         switch (c) {

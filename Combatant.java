@@ -1,34 +1,44 @@
-public class Combatant{
+public abstract class Combatant {
     private String Name;
     private int Level;
     private boolean fainted;
     private int currHp;
-    public Combatant(String Name, int Level){
+
+    public Combatant(String Name, int Level) {
         this.Name = Name;
-        this.Level= Level;
+        this.Level = Level;
         this.fainted = false;
         this.currHp = 100 * getLevel();
-        
+
     }
-    public String getName(){
+
+    public String getName() {
         return this.Name;
     }
-    public void setLevel(int i ){
+
+    public void setLevel(int i) {
         this.Level = i;
     }
-    public int getLevel(){
+
+    public int getLevel() {
         return this.Level;
     }
-    public void setFainted(boolean status){
+
+    public void setFainted(boolean status) {
         this.fainted = status;
     }
-    public boolean getFainted(){
+
+    public boolean getFainted() {
         return this.fainted;
     }
-    public void setHp(int i){
+
+    public void setHp(int i) {
         this.currHp = i;
     }
-    public int getHp(){
+
+    public int getHp() {
         return this.currHp;
     }
+
+    public abstract String MapRepresent();
 }

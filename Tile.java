@@ -1,5 +1,4 @@
-public enum Tile{
-    MARKET,
-    COMMON,
-    NONPLAYABLE;
+public enum Tile {
+    NEXUS, COMMON, BUSH, KOULOU, CAVE, NONPLAYABLE;
+
 }

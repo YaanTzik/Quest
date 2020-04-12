@@ -123,7 +123,7 @@ public class Board implements BoardInterface {
     }
 
     // Checks if an Input for Moves is Illegal for the Hero of that turn.
-    public boolean IlegalMove(char c, int HeroNum) {
+    public boolean IllegalMove(char c, int HeroNum) {
         Coordinates Location = HeroLocations.get(HeroNum);
         switch (c) {
             case 'w':
@@ -160,6 +160,7 @@ public class Board implements BoardInterface {
 
     }
 
+    // Get board to display using this method.
     public void Display() {
         List<StringBuilder> printableMap = new ArrayList<StringBuilder>();
         for (int row = 0; row < Width * 3; row++) {
@@ -203,7 +204,7 @@ public class Board implements BoardInterface {
         return PlayArea[c.getRow()][c.getCol()];
     }
 
-    // Convert
+    // Convert Character Input to Coordinate type for easy movement.
     public Coordinates convertMove(int HeroNum, char c) {
         Coordinates current = HeroLocations.get(HeroNum);
         switch (c) {
@@ -293,6 +294,7 @@ public class Board implements BoardInterface {
 
     }
 
+    // Testing Code for the Board class.
     public static void main(String[] args) {
         Board world = new Board(8, 8);
         world.Display();

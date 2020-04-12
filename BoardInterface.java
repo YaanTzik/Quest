@@ -1,6 +1,6 @@
 interface BoardInterface {
     public void Display();
 
-    public boolean IllegalMove(int r, int c);
+    public boolean IllegalMove(char c, int num);
 
 }

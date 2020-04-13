@@ -40,5 +40,5 @@ public abstract class Combatant {
         return this.currHp;
     }
 
-    public abstract String MapRepresent();
+//    public abstract String MapRepresent();
 }

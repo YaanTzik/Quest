@@ -39,8 +39,7 @@ public class QuestEngine{
             int turn = turnCount%3;
             System.out.println(turn);
             System.out.println(turnCount);
-            String turnHero;
-            turnHero = party.getHero(turn).getName();
+            String turnHero = party.getHero(turn).getName();
             System.out.println("It is Hero " + Board.ANSI_BLUE + turnHero + Board.ANSI_RESET + " Turn");
 
             String move;
@@ -85,13 +84,12 @@ public class QuestEngine{
                     }
                     helper = sc.nextInt();
                     } while (helper < 0 || helper > party.getPartySize() || helper == turn+1);
-                    System.out.println(helper);
-                    if (helper == 0) {
-                        continue;
-                    }
-                    else {
+                System.out.println(helper);
+                if (helper == 0) {
+                    continue;
+                } else {
                     World.convertMove(turn, c, helper);
-                    }
+                }
 
             } else if (!World.IllegalMove(c, turn)) {
                 continue;
@@ -121,6 +119,30 @@ public class QuestEngine{
                             }
                         }
                         break;
+                    case BUSH:
+                        World.Display();
+                        System.out.println("Hero " + Board.ANSI_BLUE + turnHero + Board.ANSI_RESET + " in the bush");
+
+                        int turn_Dex = party.getHero(turn).getDex();
+                        party.getHero(turn).setDex((int) Math.round(turn_Dex*1.1));
+                        System.out.println(party.getHero(turn));
+
+                    case KOULOU:
+                        World.Display();
+                        System.out.println("Hero " + Board.ANSI_BLUE + turnHero + Board.ANSI_RESET + " in the Koulou");
+
+                        int turn_Str = party.getHero(turn).getStr();
+                        party.getHero(turn).setStr((int) Math.round(turn_Str*1.1));
+                        System.out.println(party.getHero(turn));
+
+                    case CAVE:
+                        World.Display();
+                        System.out.println("Hero " + Board.ANSI_BLUE + turnHero + Board.ANSI_RESET + " in the Koulou");
+
+                        int turn_Agi = party.getHero(turn).getAgi();
+                        party.getHero(turn).setStr((int) Math.round(turn_Agi*1.1));
+                        System.out.println(party.getHero(turn));
+
                     case COMMON:
 //                        double fightroll = rd.nextDouble();
 //                            // System.out.println(fightroll);

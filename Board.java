@@ -127,14 +127,14 @@ public class Board implements BoardInterface {
         Coordinates Location = HeroLocations.get(HeroNum);
         switch (c) {
             case 'w':
-                if (Location.getRow() == 0)
+                if (Location.getRow() <= 0)
                     return false;
                 else if (PlayArea[Location.getRow() - 1][Location.getCol()] == Tile.NONPLAYABLE)
                     return false;
                 else
                     return true;
             case 'a':
-                if (Location.getRow() == 0)
+                if (Location.getCol() <= 0)
                     return false;
                 else if (PlayArea[Location.getRow()][Location.getCol() - 1] == Tile.NONPLAYABLE)
                     return false;
@@ -158,6 +158,17 @@ public class Board implements BoardInterface {
         }
         return false;
 
+    }
+
+    // Check Tail effects using this method.
+    public void CheckTail(int HeroNum) {
+        Coordinates Location = HeroLocations.get(HeroNum);
+        int c = Location.getCol();
+        int r = Location.getRow();
+
+        if (PlayArea[r][c] == Tile.BUSH) {
+
+        }
     }
 
     // Get board to display using this method.
@@ -205,7 +216,7 @@ public class Board implements BoardInterface {
     }
 
     // Convert Character Input to Coordinate type for easy movement.
-    public Coordinates convertMove(int HeroNum, char c) {
+    public Coordinates convertMove(int HeroNum, char c, int tel_sign) {
         Coordinates current = HeroLocations.get(HeroNum);
         switch (c) {
             case 'w':
@@ -214,8 +225,15 @@ public class Board implements BoardInterface {
                 return new Coordinates(current.getRow(), current.getCol() - 1);
             case 'd':
                 return new Coordinates(current.getRow(), current.getCol() + 1);
+            case 's':
+                return new Coordinates(current.getRow() + 1, current.getCol());
+            case 't':
+                Coordinates helper = HeroLocations.get(tel_sign);
+                current = helper;
         }
-        return new Coordinates(current.getRow() + 1, current.getCol());
+        current.setRow(Height-1);
+        return current;
+//        return new Coordinates(current.getRow() + 1, current.getCol());
     }
 
     private static void createOutterCell(Tile[][] map, List<StringBuilder> printableMap, int row, int col) {
@@ -295,9 +313,9 @@ public class Board implements BoardInterface {
     }
 
     // Testing Code for the Board class.
-    public static void main(String[] args) {
-        Board world = new Board(8, 8);
-        world.Display();
-    }
+//    public static void main(String[] args) {
+//        Board world = new Board(8, 8);
+//        world.Display();
+//    }
 
 }

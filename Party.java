@@ -9,9 +9,9 @@ public class Party<T extends Combatant>{
         PartySize = i;
     }
     public void AddHero( T c){
-        System.out.println("current size" +party.size());
-        System.out.println("PartySize"+ PartySize);
-        System.out.println(party.size()> PartySize);
+//        System.out.println("current size" +party.size());
+//        System.out.println("PartySize"+ PartySize);
+//        System.out.println(party.size()> PartySize);
         if (party.size()< PartySize) 
             party.add(c);
         

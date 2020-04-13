@@ -5,85 +5,104 @@ import java.util.Random;
 public class QuestEngine{
     private Board World;
     private HeroParty party;
+    private MonsterParty Mparty;
     private Scanner sc;
     private Market mkt;
     private Random rd;
+    private int turnCount;
 
     public QuestEngine(){
         this.World = new Board(8,8);
         this.mkt = new Market();
         this.rd = new Random(); 
         this.sc = new Scanner(System.in);
+        this.turnCount = 0;
     }
     public void play(){
-        int choice;
-        do {
-            System.out.println("How many Heros would you like in your party(1-3)");
-            while (!sc.hasNextInt()) {
-                System.out.println("Invalid input, please enter a number from 1-3");
-                sc.next(); // this is important!
-            }
-            choice = sc.nextInt();
-        } while (choice < 1 || choice > 3);
-        this.party= new HeroParty(choice);
+
+        System.out.println( Board.ANSI_PURPLE + "Welcome to the Quest of Legends ");
+        System.out.println("Please choose your 3 Champions: " + Board.ANSI_RESET);
+        this.party= new HeroParty(3);
         party.HeroSelect();
+
         boolean play = true;
+
         while(play){
+
+            System.out.println( Board.ANSI_RED + "Monster generating" + Board.ANSI_RESET);
+            this.Mparty = new MonsterParty(party.getMaxLevel(),party.getPartySize());
+            Mparty.createParty();
+            System.out.println(Mparty);
+
             World.Display();
+
+            int turn = turnCount%3;
+            System.out.println(turn);
+            System.out.println(turnCount);
+            String turnHero = party.getHero(turn).getName();
+            System.out.println("It is Hero " + Board.ANSI_BLUE + turnHero + Board.ANSI_RESET + " Turn");
+
             String move;
+
             do {
-                System.out.println("wasd to move around the map \n e to display Hero Party and access inventories \n m to print the board\n q to quite the game");
+                System.out.println("wasd to move around the map \n" +
+                        " e to display Hero info and access inventories \n" +
+                        " b to return Hero Nexus \n" +
+                        " t to teleport to other lane \n" +
+                        " m to print the board \n" +
+                        " q to quite the game");
                 while (!sc.hasNextLine()) {
                     System.out.println("Invalid input, please enter a number from 1-3");
                     sc.next(); // this is important!
                 }
                 move = sc.next();
-                // System.out.println(move);
+                    // System.out.println(move);
                 move.toLowerCase();
-            } while (!move.equals("w") && !move.equals("a")&& !move.equals("s")&& !move.equals("d") && !move.equals("q") && !move.equals("i") && !move.equals("e") && !move.equals("m"));
-            
+            } while (!move.equals("w") && !move.equals("a") && !move.equals("s") && !move.equals("d") && !move.equals("i") && !move.equals("e") && !move.equals("b") && !move.equals("m") && !move.equals("q"));
+
             char c = move.charAt(0);
-            if (move.equals("q")){
+            if (move.equals("q")) {
                 System.out.println("Thanks for playing!");
                 return;
-            }
-            else if (move.equals("m")){
+            } else if (move.equals("m")) {
                 World.Display();
                 continue;
-            }
-            else if (move.equals("e")){
-                int MenuChoice;
-                System.out.println(party.toString());
+            } else if (move.equals("e")) {
+
+                party.getHero(turn).OpenInventory();
+
+            } else if (move.equals("b")) {
+                World.convertMove(turn, c, 0);
+            } else if (move.equals("t")) {
+                int helper;
                 do {
-                    System.out.println("Which Hero would you like to inspect?");
+                    System.out.println("Which Hero would you like to teleport to?");
+//                    System.out.println(party);
                     while (!sc.hasNextLine()) {
-                        System.out.println("Invalid input, please enter a number from 1-3, 0 to return to map");
+                        System.out.println("Invalid input, please enter a number from 1-3, 0 to cancel");
                         sc.next(); // this is important!
                     }
-                    MenuChoice = sc.nextInt();
-                    } while ( MenuChoice<0 || MenuChoice > party.getPartySize());
-                    System.out.println(MenuChoice);
-                    if (MenuChoice == 0){
-                        continue;
-                    }
-                    else{
-                        party.getHero(MenuChoice-1).OpenInventory();
-                    }
-                    
-            }
-            else if (!World.IlegalMove(c)){
+                    helper = sc.nextInt();
+                    } while (helper < 0 || helper > party.getPartySize() || helper == turn+1);
+                System.out.println(helper);
+                if (helper == 0) {
+                    continue;
+                } else {
+                    World.convertMove(turn, c, helper);
+                }
+
+            } else if (!World.IllegalMove(c, turn)) {
                 continue;
-            }
-            else{
-                // System.out.println("we made it here");
-                Pair<Integer,Integer> coords = World.convertMove(c);
-                Tile currTile = World.MoveParty(coords);
-                switch (currTile){
-                    case MARKET:
+            } else {
+                    // System.out.println("we made it here");
+                Coordinates coords = World.convertMove(turn, c,0);
+                Tile currTile = World.MoveHero(turn, coords);
+                switch (currTile) {
+                    case NEXUS:
                         World.Display();
-                        boolean menu =true;
+                        boolean menu = true;
                         String yn;
-                        while(menu){
+                        while (menu) {
                             do {
                                 System.out.println("Would you like to enter the market (y/n)");
                                 while (!sc.hasNextLine()) {
@@ -93,49 +112,58 @@ public class QuestEngine{
                                 yn = sc.next().toLowerCase();
                             } while (!yn.equals("y") && !yn.equals("n"));
                             if (yn.equals("y")) {
-                                int HeroChoice;
-                                do {
-                                    System.out.println(party.toString());
-                                    System.out.printf("Which Hero would like to enter the market? (1-%d), 0 to exit \n",party.getPartySize());
-                                    while (!sc.hasNextInt()) {
-                                        System.out.printf("Invalid input, please enter a number from 1-%d \n", party.getPartySize());
-                                        sc.next(); // this is important!
-                                    }
-                                    HeroChoice = sc.nextInt();
-                                } while ( HeroChoice<0 || HeroChoice > party.getPartySize());
-                                if (HeroChoice ==0){
-                                    menu = false;
-                                    continue;
-                                }
-                                else
-                                mkt.DetermineMarketMode(party.getHero(HeroChoice-1));    
-                            }
-                            else{
+                                mkt.DetermineMarketMode(party.getHero(turn - 1));
+                            } else {
                                 menu = false;
                                 continue;
                             }
                         }
                         break;
-                        
+                    case BUSH:
+                        World.Display();
+                        System.out.println("Hero " + Board.ANSI_BLUE + turnHero + Board.ANSI_RESET + " in the bush");
+
+                        int turn_Dex = party.getHero(turn).getDex();
+                        party.getHero(turn).setDex((int) Math.round(turn_Dex*1.1));
+                        System.out.println(party.getHero(turn));
+
+                    case KOULOU:
+                        World.Display();
+                        System.out.println("Hero " + Board.ANSI_BLUE + turnHero + Board.ANSI_RESET + " in the Koulou");
+
+                        int turn_Str = party.getHero(turn).getStr();
+                        party.getHero(turn).setStr((int) Math.round(turn_Str*1.1));
+                        System.out.println(party.getHero(turn));
+
+                    case CAVE:
+                        World.Display();
+                        System.out.println("Hero " + Board.ANSI_BLUE + turnHero + Board.ANSI_RESET + " in the Koulou");
+
+                        int turn_Agi = party.getHero(turn).getAgi();
+                        party.getHero(turn).setStr((int) Math.round(turn_Agi*1.1));
+                        System.out.println(party.getHero(turn));
 
                     case COMMON:
-                        double fightroll = rd.nextDouble();
-                        // System.out.println(fightroll);
-                        if (fightroll>= 0.8){
-                            Fight FightInstance = new Fight(party);
-                            FightInstance.getMonsters().createParty();
-                            FightInstance.run();
-                        }
+//                        double fightroll = rd.nextDouble();
+//                            // System.out.println(fightroll);
+//                        if (fightroll >= 0.8) {
+//                            Fight FightInstance = new Fight(party);
+//                            FightInstance.getMonsters().createParty();
+//                            FightInstance.run();
+//                        }
+
+
                         break;
                     case NONPLAYABLE:
                         break;
-                
+
                 }
-
             }
-
+            turnCount ++;
+//            }
         }
     }
+
 public static void main(String[] args){
     QuestEngine GameInstance = new QuestEngine();
     GameInstance.play();

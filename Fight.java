@@ -34,7 +34,7 @@ public class Fight{
                     do {
                         System.out.printf("What would %s like to do ?\n",heroes.getHero(i).getName());
                         System.out.println(heroes.getHero(i).toString());
-                        System.out.println("1. Attack \n2. Spell \n3.Item");
+                        System.out.println("1. Attack \n2. Spell \n3. Item");
                         System.out.println("enter a number 1-3");
                         while (!sc.hasNextInt()) {
                             System.out.println("Invalid input, please enter a number from 1-3 \n");

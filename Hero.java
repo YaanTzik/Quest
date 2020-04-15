@@ -2,7 +2,7 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.ArrayList;
 
-public abstract class Hero extends Combatant {
+public abstract class Hero extends Combatant implements BuyerInterface {
     private int CurrMp;
     private int Str;
     private int Dex;

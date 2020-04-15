@@ -99,4 +99,15 @@ public class HeroParty extends Party<Hero> {
             getHero(i).Lose();
         }
     }
+
+    public void RoundOver() {
+        for (int i = 0; i < getPartySize(); i++) {
+            Hero h = getHero(i);
+            if (!h.getFainted()) {
+                h.setHp((int) Math.round(h.getLevel() * 1.1));
+                h.setMp((int) Math.round(h.getMp() * 1.1));
+            }
+
+        }
+    }
 }

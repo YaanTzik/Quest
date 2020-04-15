@@ -38,7 +38,6 @@ public class QuestEngine {
 
         boolean play = true;
 
-
         while (play) {
 
             // World.Display();n
@@ -117,95 +116,100 @@ public class QuestEngine {
                 }
 
                 String move;
-
-                do {
-                    System.out.println("wasd to move around the map \n"
-                            + " e to display Hero info and access inventories \n" + " b to return Hero Nexus \n"
-                            + " t to teleport to other lane \n" + " m to print the board \n" + " q to quite the game");
-                    while (!sc.hasNextLine()) {
-                        System.out.println("Invalid input, please enter a number from 1-3");
-                        sc.next(); // this is important!
-                    }
-                    move = sc.next();
-                    // System.out.println(move);
-                    move.toLowerCase();
-                } while (!move.equals("w") && !move.equals("a") && !move.equals("s") && !move.equals("d")
-                        && !move.equals("i") && !move.equals("e") && !move.equals("b") && !move.equals("m")
-                        && !move.equals("q"));
-
-                char c = move.charAt(0);
-                if (move.equals("q")) {
-                    System.out.println("Thanks for playing!");
-                    return;
-                } else if (move.equals("m")) {
-                    World.Display();
-                    continue;
-                } else if (move.equals("e")) {
-
-                    party.getHero(turn).OpenInventory();
-
-                } else if (move.equals("b")) {
-                    World.convertMove(turn, c, 0);
-                } else if (move.equals("t")) {
-//                System.out.println(turn);
-                int helper;
-                do {
-                    System.out.println("Which Hero would you like to teleport to?\n" +
-                    " 1-3: select Hero \n" +
-                    " 0:   cancle \n" +
-                    " 4:   teleport back its own line");
-//                    System.out.println(party);
-                    while (!sc.hasNextLine()) {
-                        System.out.println("Invalid input, please enter a number from 1-3, 0 to cancel, 4 to teleport back its own line");
-                        sc.next(); // this is important!
-                    }
-                    helper = sc.nextInt()-1;
-                } while (helper < 0 || helper > party.getPartySize() || helper == turn);
-//                System.out.println(helper);
-                if (helper == -1) {
-                    continue;
-                } else if (helper == 3) {
-                    if (!World.backTele(turn)) {
-                        continue;
-                    }
-                } else {
-                    int tileselect;
-                    World.printTele(helper);
+                Boolean action = true;
+                while (action) {
                     do {
-                        System.out.println("Which tile you want to telport to?");
+                        System.out.println(
+                                "wasd to move around the map \n" + " e to display Hero info and access inventories \n"
+                                        + " b to return Hero Nexus \n" + " t to teleport to other lane \n"
+                                        + " m to print the board \n" + " q to quite the game");
                         while (!sc.hasNextLine()) {
-                            System.out.println("Invalid input, Please enter a number to select, 0 cancel");
+                            System.out.println("Invalid input, please enter a number from 1-3");
                             sc.next(); // this is important!
                         }
-                        tileselect = sc.nextInt()-1;
-                    } while (tileselect < -1 || tileselect > World.getTelLocation(helper).size());
-                    if (tileselect == -1) {
+                        move = sc.next();
+                        // System.out.println(move);
+                        move.toLowerCase();
+                    } while (!move.equals("w") && !move.equals("a") && !move.equals("s") && !move.equals("d")
+                            && !move.equals("t") && !move.equals("e") && !move.equals("b") && !move.equals("m")
+                            && !move.equals("q"));
+
+                    char c = move.charAt(0);
+                    if (move.equals("q")) {
+                        System.out.println("Thanks for playing!");
+                        return;
+                    } else if (move.equals("m")) {
+                        World.Display();
+                        continue;
+                    } else if (move.equals("e")) {
+
+                        party.getHero(turn).OpenInventory();
+
+                    } else if (move.equals("b")) {
+                        World.convertMove(turn, c, 0);
+                    } else if (move.equals("t")) {
+                        // System.out.println(turn);
+                        action = false;
+                        int helper;
+                        do {
+                            System.out.println("Which Hero would you like to teleport to?\n" + " 1-3: select Hero \n"
+                                    + " 0:   cancle \n" + " 4:   teleport back its own line");
+                            // System.out.println(party);
+                            while (!sc.hasNextLine()) {
+                                System.out.println(
+                                        "Invalid input, please enter a number from 1-3, 0 to cancel, 4 to teleport back its own line");
+                                sc.next(); // this is important!
+                            }
+                            helper = sc.nextInt() - 1;
+                        } while (helper < 0 || helper > party.getPartySize() || helper == turn);
+                        // System.out.println(helper);
+                        if (helper == -1) {
+                            continue;
+                        } else if (helper == 3) {
+                            if (!World.backTele(turn)) {
+                                continue;
+                            }
+                        } else {
+                            int tileselect;
+                            World.printTele(helper);
+                            do {
+                                System.out.println("Which tile you want to telport to?");
+                                while (!sc.hasNextLine()) {
+                                    System.out.println("Invalid input, Please enter a number to select, 0 cancel");
+                                    sc.next(); // this is important!
+                                }
+                                tileselect = sc.nextInt() - 1;
+                            } while (tileselect < -1 || tileselect > World.getTelLocation(helper).size());
+                            if (tileselect == -1) {
+                                continue;
+                            } else {
+                                World.finishTele(turn, helper, tileselect);
+                            }
+                        }
+
+                    } else if (!World.IllegalMove(c, turn)) {
                         continue;
                     } else {
-                        World.finishTele(turn, helper, tileselect);
-                    }
-                }
-
-            } else if (!World.IllegalMove(c, turn)) {
-                    continue;
-                } else {
-                    // System.out.println("we made it here");
-                    Coordinates coords = World.convertMove(turn, c, 0);
-                    // moving hero
-                    Tile currTile = World.MoveHero(turn, coords);
-                    h.TileBoost(currTile);
-                    // If hero is in the same cell as a monster, we start a fight
-                    int MonsterNum = World.hasMonster(coords);
-                    if (MonsterNum != -1) {
-                        Fight fight = new Fight(h, Mparty.getHero(MonsterNum));
-                        fight.run();
-                        if (h.getFainted()) {
-                            World.Hdeath(turn);
+                        // System.out.println("we made it here");
+                        action = false;
+                        Coordinates coords = World.convertMove(turn, c, 0);
+                        // moving hero
+                        Tile currTile = World.MoveHero(turn, coords);
+                        h.TileBoost(currTile);
+                        // If hero is in the same cell as a monster, we start a fight
+                        int MonsterNum = World.hasMonster(coords);
+                        if (MonsterNum != -1) {
+                            Fight fight = new Fight(h, Mparty.getHero(MonsterNum));
+                            fight.run();
+                            if (h.getFainted()) {
+                                World.Hdeath(turn);
+                            }
                         }
+
                     }
 
-
                 }
+
                 // System.out.println("Troublshooting Map");
                 // World.Display();
 
@@ -236,14 +240,12 @@ public class QuestEngine {
                 }
 
             }
-
-
+            party.RoundOver();
             roundCount++;
 
         }
 
     }
-
 
     public static void main(String[] args) {
         QuestEngine GameInstance = new QuestEngine();

@@ -1,14 +1,103 @@
 Document 
 
+Pair18:
+ChenHao Tao
+Yaan Tzi Kan
 #################################
 
 Class QuestEngine 
-     This class is the same as in the previous implementation of student Yaan Tzi Kan with the difference that we added functionality for the Hero take action individually by each turn, and other features like, Teleport, 'HomeKey' b to return hero's Nexus and the Effects of special tails.
+     This class is the same as in the previous implementation of student Yaan Tzi Kan with 
+     the difference that we added functionality for the Hero take action individually by each turn,
+      and other features like, Teleport, 'HomeKey' b to return hero's Nexus.
 
 Class Board
-     This class is the same as in the previous implementation of student Yaan Tzi Kan with the difference that we change the implementation for the map layout and display board method. Also, we add functionality for checking and printing legal teleport locations in order to give the player to select. 
+     This class is the same as in the previous implementation of student Yaan Tzi Kan as it had most 
+     of the necessary methods implemented. Refactoring was minimal and mostly done for it to handle tracking
+     both monster and Hero locations simultaneously. 
+     We changed the implementation for the map layout and display board method.
+      Also, we add functionality for checking and printing legal teleport locations in order to give the player to select. 
+
+Class Coordinates
+     This class is new to the implementation, we use it primarily to keep track of each Hero individually.
+     We decided that it would be good to use it to encapsulate the (x,y) coordinates over a KV pair as we had 
+     free rein to update it as needed. 
 
 Class Tile
-	This class is the same as in the previous implementation of student Yaan Tzi Kan with the difference that we add more tile types such as Nexus type for this project requirement.
+	This class is the same as in the previous implementation of student Yaan Tzi Kan with the difference
+     that we add more tile types such as Nexus type for this project requirement.
+
+Class Party:
+     Main generic class that both HeroParty and MonsterParty inherit from. This was taken from Student Yaan Tzi Kan's previous homework 
+     as it provided all the functionalitythat was require throughout the game.
+
+class Combatant:
+     We took this abstract class from the previous implementation of Yaan Tzi Kan as it enable good scaleability to both Heros and Monsters.
+     We added a Coordinate class to it for us to be able to track individual locations of both monsters and Heros easily with minimal code.
+
+class Monster:
+     The Monster class was taken from the previous implmentation of Yaan Tzi Kan. We made it abstract
+     and added a couple of abstract classes so that it would scale well for polymorphism to be broken
+     down into 3 classes of Monsters. This should make it easily scaleable for future use in the event
+     new types of monsters with new behaviours are introduced.
+
+class ExoSkeleton, Dragon, Spirit
+     double inheritance from Monster class. polymorph. While there is no class specific behaviour currently.
+     It will make it easy to scale and add speicific functionality to each type of monster.
+
+class Monster Party:
+     The Monster class was taken from the previous implmentation of Yaan Tzi Kan. We had to add the functionality
+     for the MonsterParty to indefinitely expand to support multiple waves of Monsters.
+
+Class Hero : 
+     This class was based on the previous implementation as Yaan Tzi Kan. 
+     As we felt that it was well thought well out and easily scaled for polymorphism
+     to split the Hero class into 3 different classes. 
+     We added the functionality to track the location of each individual hero using the 
+     coordinates class and at the same time converted it to an abstract class for the
+     use of abstract methods.
+     We also added the a buyer interface to the class.
+
+Paladin, Warrior, Sorcerer
+     We then used double inheritance for each class of hero. This gives use more scaleability if in the future
+     we want to quickly create more class specific behavior such as special skills/ Ultimate skills etc.
+
+Class HeroParty
+     This class is the same as the previous implementation from Yaan Tzi Kan 
+     it held the core functionality that was required and we added only 1 method to it. 
+     Round over which handles the regeneration of the Heros hp and Mana
+
+BuyerInterface
+     This Interface was new and mostly implemented in the Hero Class. We added this interface
+     mainly in the even that we wanted to implement Monsters or other entities that could purchase items.
+     While this game did not have Monsters that could purchase items, in similar MOBAs like Dota2 and League
+     of Legends, the CPU can purchase items to scale better against the Heroes.
+
+
+
+Class Item, Selllable Interface
+     This Item Class was taken from the previous implementation from Yaan Tzi Kan.
+     As it was well organized and had good polymorphism with the classes that inherited from this abstract class.
+     We then added a Sellable Interface.Although it is not really used in this implementation. We felt that 
+     doing so helped for future scaleability in the event that non sellable items were introduced.
+
+class PotionType, Spell Type
+     Allowed quick identification of to quickly assess their affect. Also from previous implementation Yaan Tzi Kan.
+
+Class Armor, Weapon, Spell, Potion
+     These Classes are the exact same as the previous implementation from Yaan Tzi Kan. 
+     They were well organized and worked well as inherited classes. 
+
+Class Inventory/ Market;
+     These classes is exactly the same a the previous implementation of Yaan Tzi Kan. It
+     was well organized and segments the items well. Almost like a proper game Inventory
+     with different pages for different classes of items. We felt this scaled well and allowed
+     for future scaeleability in the event new item classes are introduced.
+
+class Fight
+     this class was taken from the previous implementation of Yaan Tzi Kan. There were no changes to
+     the main loop of the fight class. Instead we added a new constructor so that we could pass in individual
+     heros where they could be adapted to the main loop but being put into new partys for the fight
+
+
 
 ################################

@@ -1,5 +1,5 @@
 import java.util.Random;
-import javafx.util.Pair;
+// import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +26,10 @@ public class Board implements BoardInterface {
     private int Width;
     private Tile[][] PlayArea;
     // We use Key Value Pairs to keep track of each moving entity on the board.
-    private ArrayList<Coordinates> HeroLocations;
-    private ArrayList<Coordinates> MonsterLocations;
+    // private ArrayList<Coordinates> HeroLocations;
+    // private ArrayList<Coordinates> MonsterLocations;
+    private MonsterParty Mp;
+    private HeroParty Hp;
 
     // Dead Rows
     private int dead1;
@@ -37,6 +39,16 @@ public class Board implements BoardInterface {
 
     // private HeroParty heroParty;
     // private MonsterParty monsterParty;
+
+    // Spawn Locations for Monsters
+    private Coordinates M1;
+    private Coordinates M2;
+    private Coordinates M3;
+
+    // Spawn Locations for Heros
+    private Coordinates H1;
+    private Coordinates H2;
+    private Coordinates H3;
 
     public Board(int r, int c) {
         this.Height = r;
@@ -68,26 +80,33 @@ public class Board implements BoardInterface {
 
         // Initializing the starting positions of Heros and Monsters.
         // Monsters start at top left of the lane they are in.
-        Coordinates M1 = new Coordinates(0, 0);
-        Coordinates M2 = new Coordinates(0, dead1 + 1);
-        Coordinates M3 = new Coordinates(0, dead2 + 1);
-        MonsterLocations = new ArrayList<Coordinates>();
-        MonsterLocations.add(M1);
-        MonsterLocations.add(M2);
-        MonsterLocations.add(M3);
+        M1 = new Coordinates(0, 0);
+        M2 = new Coordinates(0, dead1 + 1);
+        M3 = new Coordinates(0, dead2 + 1);
 
         // Heros will start at the bottom left of the lane they are in.
-        Coordinates H1 = new Coordinates(r - 1, 0);
-        Coordinates H2 = new Coordinates(r - 1, dead1 + 1);
-        Coordinates H3 = new Coordinates(r - 1, dead2 + 1);
-        HeroLocations = new ArrayList<Coordinates>();
-        HeroLocations.add(H1);
-        HeroLocations.add(H2);
-        HeroLocations.add(H3);
+
+        H1 = new Coordinates(Height - 1, 0);
+        H2 = new Coordinates(Height - 1, dead1 + 1);
+        H3 = new Coordinates(Height - 1, dead2 + 1);
 
         // Randomly fill boards with tile types
         fillBoard();
 
+    }
+
+    public void setHp(HeroParty hp) {
+        hp.getHero(0).setCoordinates(H1);
+        hp.getHero(1).setCoordinates(H2);
+        hp.getHero(2).setCoordinates(H3);
+        this.Hp = hp;
+    }
+
+    public void setMp(MonsterParty mp) {
+        mp.getHero(0).setCoordinates(M1);
+        mp.getHero(1).setCoordinates(M2);
+        mp.getHero(2).setCoordinates(M3);
+        this.Mp = mp;
     }
 
     public int getHeight() {
@@ -124,14 +143,16 @@ public class Board implements BoardInterface {
 
     // Checks if an Input for Moves is Illegal for the Hero of that turn.
     public boolean IllegalMove(char c, int HeroNum) {
-        Coordinates Location = HeroLocations.get(HeroNum);
+        Coordinates Location = Hp.getHero(HeroNum).getCoordinates();
         switch (c) {
             case 'w':
                 if (Location.getRow() <= 0)
                     return false;
                 else if (PlayArea[Location.getRow() - 1][Location.getCol()] == Tile.NONPLAYABLE)
                     return false;
-                else
+                else if (PastMonster(Location)) {
+                    return false;
+                } else
                     return true;
             case 'a':
                 if (Location.getCol() <= 0)
@@ -162,7 +183,7 @@ public class Board implements BoardInterface {
 
     // Check Tail effects using this method.
     public void CheckTail(int HeroNum) {
-        Coordinates Location = HeroLocations.get(HeroNum);
+        Coordinates Location = Hp.getHero(HeroNum).getCoordinates();
         int c = Location.getCol();
         int r = Location.getRow();
 
@@ -211,13 +232,13 @@ public class Board implements BoardInterface {
 
     // Moves Hero to Tile Specified Coordinates
     public Tile MoveHero(int HeroNum, Coordinates c) {
-        HeroLocations.get(HeroNum).setCoords(c.getRow(), c.getCol());
+        Hp.getHero(HeroNum).setCoordinates(c);
         return PlayArea[c.getRow()][c.getCol()];
     }
 
     // Convert Character Input to Coordinate type for easy movement.
     public Coordinates convertMove(int HeroNum, char c, int tel_sign) {
-        Coordinates current = HeroLocations.get(HeroNum);
+        Coordinates current = Hp.getHero(HeroNum).getCoordinates();
         switch (c) {
             case 'w':
                 return new Coordinates(current.getRow() - 1, current.getCol());
@@ -228,12 +249,11 @@ public class Board implements BoardInterface {
             case 's':
                 return new Coordinates(current.getRow() + 1, current.getCol());
             case 't':
-                Coordinates helper = HeroLocations.get(tel_sign);
-                current = helper;
+                break;
         }
-        current.setRow(Height-1);
+        current.setRow(Height - 1);
         return current;
-//        return new Coordinates(current.getRow() + 1, current.getCol());
+        // return new Coordinates(current.getRow() + 1, current.getCol());
     }
 
     private static void createOutterCell(Tile[][] map, List<StringBuilder> printableMap, int row, int col) {
@@ -282,9 +302,9 @@ public class Board implements BoardInterface {
         printableMap.get(row).append(getInnerCellStr(component));
     }
 
-    private String getHeroComponent(Coordinates c, ArrayList<Coordinates> l) {
-        for (int i = 0; i < l.size(); i++) {
-            if (l.get(i).equals(c)) {
+    private String getHeroComponent(Coordinates c) {
+        for (int i = 0; i < Hp.getPartySize(); i++) {
+            if (Hp.getHero(i).getCoordinates().equals(c)) {
                 // ret = heroParty.getHero(i).MapRepresent();
                 return "H" + Integer.toString(i);
             }
@@ -292,30 +312,185 @@ public class Board implements BoardInterface {
         return "  ";
     }
 
-    private String getMonsterComponent(Coordinates c, ArrayList<Coordinates> l) {
-        for (int i = 0; i < l.size(); i++) {
-            if (l.get(i).equals(c)) {
+    private String getMonsterComponent(Coordinates c) {
+        for (int i = 0; i < Mp.getPartySize(); i++) {
+            // System.out.println("PartySize" + Mp.getPartySize());
+            if (Mp.getHero(i).getCoordinates().equals(c)) {
                 // ret = heroParty.getHero(i).MapRepresent();
                 return "M" + Integer.toString(i);
             }
         }
         return "  ";
+
     }
 
     private String getCellComponent(int row, int col) {
         Coordinates coords = new Coordinates(row, col);
         String ret;
-        ret = getHeroComponent(coords, HeroLocations);
+        ret = getHeroComponent(coords);
         ret += " ";
-        ret += getMonsterComponent(coords, MonsterLocations);
+        ret += getMonsterComponent(coords);
         return ret;
 
     }
 
+    public Tile getTile(int i) {
+        Coordinates c = Hp.getHero(i).getCoordinates();
+        return PlayArea[c.getRow()][c.getCol()];
+    }
+
+    public boolean checkWin() {
+        for (int i = 0; i < Hp.getPartySize(); i++) {
+            Coordinates c = Hp.getHero(i).getCoordinates();
+            if (c.getRow() == 0) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    public boolean checkLoss() {
+        for (int i = 0; i < Mp.getPartySize(); i++) {
+            Coordinates c = Mp.getHero(i).getCoordinates();
+            if (c.getRow() == Height - 1) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    public void respawn(int i) {
+        if (i == 0) {
+            System.out.println("Hero1 sent to spawn");
+            Coordinates c = Hp.getHero(i).getCoordinates();
+            c.setCoords(H1.getRow(), H1.getCol());
+        } else if (i == 1) {
+            Coordinates c = Hp.getHero(i).getCoordinates();
+            c.setCoords(H2.getRow(), H2.getCol());
+        } else {
+            Coordinates c = Hp.getHero(i).getCoordinates();
+            c.setCoords(H3.getRow(), H3.getCol());
+        }
+
+    }
+
+    public int hasMonster(Coordinates c) {
+        for (int i = 0; i < Mp.getPartySize(); i++) {
+            Coordinates l = Mp.getHero(i).getCoordinates();
+            if (l.equals(c)) {
+                return i;
+            }
+        }
+        // return -1 if no monsters in the same cell.
+        return -1;
+    }
+
+    public int hasHeroAdjacent(int mon) {
+        Coordinates c = Mp.getHero(mon).getCoordinates();
+        for (int i = 0; i < Hp.getPartySize(); i++) {
+            // case if Hero is below Monster
+            Coordinates hL = Hp.getHero(i).getCoordinates();
+            if (hL.getRow() == c.getRow() - 1 && hL.getCol() == c.getCol()) {
+                return i;
+            }
+            // Same row but if hero is to the right of the monster
+            else if (hL.getCol() + 1 == c.getCol() && hL.getRow() == c.getRow()) {
+                return i;
+            }
+            // Same row but hero is to the left of the monster.
+            else if (hL.getCol() - 1 == c.getCol() && hL.getRow() == c.getRow()) {
+                return i;
+            }
+            // hero is diagonally to the left of the monster
+            else if (hL.getCol() - 1 == c.getCol() && hL.getRow() == c.getRow() - 1) {
+                return i;
+            }
+            // hero is diagonally to the right of the monster
+            else if (hL.getCol() + 1 == c.getCol() && hL.getRow() == c.getRow() - 1) {
+                return i;
+            }
+
+        }
+        return -1;
+    }
+
+    public void Hdeath(int i) {
+        System.out.println("Hero Removed from Map");
+        Hp.getHero(i).setCoordinates(new Coordinates(-1, -1));
+
+    }
+
+    public void Mdeath(int i) {
+
+        Mp.getHero(i).setCoordinates(new Coordinates(-1, -1));
+
+    }
+
+    public void moveMonster(int i) {
+        Coordinates mL = Mp.getHero(i).getCoordinates();
+        mL.setCoords(mL.getRow() + 1, mL.getCol());
+    }
+
+    public boolean hasMonsterAdjacent(Coordinates c) {
+        for (int i = 0; i < Mp.getPartySize(); i++) {
+            Coordinates M = Mp.getHero(i).getCoordinates();
+            // check Horizontals
+            if (M.getRow() == c.getRow() && Math.abs(c.getCol() - M.getCol()) == 1) {
+                return true;
+            }
+            // check Verticals
+            else if (M.getCol() == c.getCol() && Math.abs(c.getRow() - M.getRow()) == 1) {
+                return true;
+            }
+            // checking diagonals
+            else if (Math.abs(M.getCol() - c.getCol()) == 1 && Math.abs(M.getRow() - c.getRow()) == 1) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    public ArrayList<Integer> getAdjacentM(Coordinates c) {
+        ArrayList<Integer> ret = new ArrayList<Integer>();
+        for (int i = 0; i < Mp.getPartySize(); i++) {
+            Coordinates M = Mp.getHero(i).getCoordinates();
+            // check Horizontals
+            if (M.getRow() == c.getRow() && Math.abs(c.getCol() - M.getCol()) == 1) {
+                ret.add(i);
+            }
+            // check Verticals
+            else if (M.getCol() == c.getCol() && Math.abs(c.getRow() - M.getRow()) == 1) {
+                ret.add(i);
+            }
+            // checking diagonals
+            else if (Math.abs(M.getCol() - c.getCol()) == 1 && Math.abs(M.getRow() - c.getRow()) == 1) {
+                ret.add(i);
+            }
+
+        }
+        return ret;
+    }
+
+    public boolean PastMonster(Coordinates Location) {
+        for (int i = 0; i < Mp.getPartySize(); i++) {
+            Coordinates mLocation = Mp.getHero(i).getCoordinates();
+            if (mLocation.equals(Location)) {
+                return true;
+            } else if (mLocation.getRow() == Location.getRow()
+                    && Math.abs(mLocation.getCol() - Location.getCol()) == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Testing Code for the Board class.
-//    public static void main(String[] args) {
-//        Board world = new Board(8, 8);
-//        world.Display();
-//    }
+    // public static void main(String[] args) {
+    // Board world = new Board(8, 8);
+    // world.Display();
+    // }
 
 }

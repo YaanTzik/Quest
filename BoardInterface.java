@@ -3,4 +3,8 @@ interface BoardInterface {
 
     public boolean IllegalMove(char c, int num);
 
+    public boolean checkWin();
+
+    public boolean checkLoss();
+
 }

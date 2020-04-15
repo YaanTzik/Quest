@@ -1,0 +1,14 @@
+Document 
+
+#################################
+
+Class QuestEngine 
+     This class is the same as in the previous implementation of student Yaan Tzi Kan with the difference that we added functionality for the Hero take action individually by each turn, and other features like, Teleport, 'HomeKey' b to return hero's Nexus and the Effects of special tails.
+
+Class Board
+     This class is the same as in the previous implementation of student Yaan Tzi Kan with the difference that we change the implementation for the map layout and display board method. Also, we add functionality for checking and printing legal teleport locations in order to give the player to select. 
+
+Class Tile
+	This class is the same as in the previous implementation of student Yaan Tzi Kan with the difference that we add more tile types such as Nexus type for this project requirement.
+
+################################

@@ -31,7 +31,13 @@ public class QuestEngine {
         World.setHp(party);
         World.setMp(Mparty);
 
+        System.out.println(Board.ANSI_RED + "Monster generating" + Board.ANSI_RESET);
+        this.Mparty = new MonsterParty(party.getMaxLevel(), party.getPartySize());
+        Mparty.createParty();
+        System.out.println(Mparty);
+
         boolean play = true;
+
 
         while (play) {
 
@@ -141,24 +147,46 @@ public class QuestEngine {
                 } else if (move.equals("b")) {
                     World.convertMove(turn, c, 0);
                 } else if (move.equals("t")) {
-                    int helper;
+//                System.out.println(turn);
+                int helper;
+                do {
+                    System.out.println("Which Hero would you like to teleport to?\n" +
+                    " 1-3: select Hero \n" +
+                    " 0:   cancle \n" +
+                    " 4:   teleport back its own line");
+//                    System.out.println(party);
+                    while (!sc.hasNextLine()) {
+                        System.out.println("Invalid input, please enter a number from 1-3, 0 to cancel, 4 to teleport back its own line");
+                        sc.next(); // this is important!
+                    }
+                    helper = sc.nextInt()-1;
+                } while (helper < 0 || helper > party.getPartySize() || helper == turn);
+//                System.out.println(helper);
+                if (helper == -1) {
+                    continue;
+                } else if (helper == 3) {
+                    if (!World.backTele(turn)) {
+                        continue;
+                    }
+                } else {
+                    int tileselect;
+                    World.printTele(helper);
                     do {
-                        System.out.println("Which Hero would you like to teleport to?");
-                        // System.out.println(party);
+                        System.out.println("Which tile you want to telport to?");
                         while (!sc.hasNextLine()) {
-                            System.out.println("Invalid input, please enter a number from 1-3, 0 to cancel");
+                            System.out.println("Invalid input, Please enter a number to select, 0 cancel");
                             sc.next(); // this is important!
                         }
-                        helper = sc.nextInt();
-                    } while (helper < 0 || helper > party.getPartySize() || helper == turn + 1);
-                    System.out.println(helper);
-                    if (helper == 0) {
+                        tileselect = sc.nextInt()-1;
+                    } while (tileselect < -1 || tileselect > World.getTelLocation(helper).size());
+                    if (tileselect == -1) {
                         continue;
                     } else {
-                        World.convertMove(turn, c, helper);
+                        World.finishTele(turn, helper, tileselect);
                     }
+                }
 
-                } else if (!World.IllegalMove(c, turn)) {
+            } else if (!World.IllegalMove(c, turn)) {
                     continue;
                 } else {
                     // System.out.println("we made it here");
@@ -175,6 +203,7 @@ public class QuestEngine {
                             World.Hdeath(turn);
                         }
                     }
+
 
                 }
                 // System.out.println("Troublshooting Map");
@@ -208,13 +237,17 @@ public class QuestEngine {
 
             }
 
+
             roundCount++;
+
         }
 
     }
+
 
     public static void main(String[] args) {
         QuestEngine GameInstance = new QuestEngine();
         GameInstance.play();
     }
+
 }

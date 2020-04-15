@@ -6,7 +6,11 @@ to compile :
 javac QuestEngine.java
 
 to run:
-java QuestEngine
+java QuestEngine <BoardHeight> <BoardWidth>
+
+where Board height/ boardwidth are the desired board height/width for the gameplay.
+Most of the logic is built around having the board dimensions being 8,8 but 8,11 should provide
+a good take on the game too. 
 
 Classes:
 

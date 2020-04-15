@@ -11,8 +11,8 @@ public class QuestEngine {
     private Random rd;
     private int roundCount;
 
-    public QuestEngine() {
-        this.World = new Board(8, 8);
+    public QuestEngine(int boardHeight, int boardWidth) {
+        this.World = new Board(boardHeight, boardWidth);
         this.mkt = new Market();
         this.rd = new Random();
         this.sc = new Scanner(System.in);
@@ -248,7 +248,9 @@ public class QuestEngine {
     }
 
     public static void main(String[] args) {
-        QuestEngine GameInstance = new QuestEngine();
+        int BoardHeight = Integer.parseInt(args[0]);
+        int BoardWidth = Integer.parseInt(args[1]);
+        QuestEngine GameInstance = new QuestEngine(BoardHeight, BoardWidth);
         GameInstance.play();
     }
 

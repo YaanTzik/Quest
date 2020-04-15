@@ -138,7 +138,7 @@ public class Board implements BoardInterface {
             for (int c = 0; c < Width; c++) {
                 if (c == dead1 || c == dead2) {
                     PlayArea[r][c] = Tile.NONPLAYABLE;
-                } else if (r == 0 || r == Width - 1) {
+                } else if (r == 0 || r == Height - 1) {
                     PlayArea[r][c] = Tile.NEXUS;
                 } else {
                     double roll = rd.nextDouble();
@@ -315,7 +315,7 @@ public class Board implements BoardInterface {
     // Get board to display using this method.
     public void Display() {
         List<StringBuilder> printableMap = new ArrayList<StringBuilder>();
-        for (int row = 0; row < Width * 3; row++) {
+        for (int row = 0; row < Height * 3; row++) {
             printableMap.add(new StringBuilder());
             if ((row / 3) % 2 == 0) {
                 for (int col = 0; col < Width; col++) {
@@ -345,7 +345,7 @@ public class Board implements BoardInterface {
                 printableMap.get(row).append("\n");
         }
 
-        for (int i = 0; i < Width * 3; i++) {
+        for (int i = 0; i < Height * 3; i++) {
             System.out.print(printableMap.get(i));
         }
     }
@@ -381,6 +381,7 @@ public class Board implements BoardInterface {
     }
 
     private static void createOutterCell(Tile[][] map, List<StringBuilder> printableMap, int row, int col) {
+        System.out.println(row);
         switch (map[row / 3][col]) {
             case NEXUS:
                 printableMap.get(row).append(getOuterCellStr('N', ANSI_BLUE));

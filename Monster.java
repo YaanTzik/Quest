@@ -1,6 +1,7 @@
 import java.util.Random;
 
-public abstract class Monster extends Combatant implements Cloneable {
+public abstract class
+Monster extends Combatant implements Cloneable {
     // private String Type;
     public static final String ANSI_PURPLE = "\u001B[35m";
     public static final String ANSI_CYAN = "\u001B[36m";

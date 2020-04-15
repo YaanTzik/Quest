@@ -1,5 +1,7 @@
 import java.util.Random;
 import javafx.util.Pair;
+
+import javax.management.ListenerNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,10 +30,14 @@ public class Board implements BoardInterface {
     // We use Key Value Pairs to keep track of each moving entity on the board.
     private ArrayList<Coordinates> HeroLocations;
     private ArrayList<Coordinates> MonsterLocations;
+    private ArrayList<Pair<Integer, Integer>> TelLocations;
 
-    // Dead Rows
+    // Dead Columns
     private int dead1;
     private int dead2;
+
+    // Line Range
+    private ArrayList<Pair<Integer, Integer>> LineRange;
 
     private Random rd;
 
@@ -85,6 +91,16 @@ public class Board implements BoardInterface {
         HeroLocations.add(H2);
         HeroLocations.add(H3);
 
+        //
+        Pair<Integer, Integer> L1 = new Pair<Integer, Integer>(0, 1);
+        Pair<Integer, Integer> L2 = new Pair<Integer, Integer>(dead1 + 1, dead1 + 2);
+        Pair<Integer, Integer> L3 = new Pair<Integer, Integer>(dead2 + 1, dead2 + 2);
+        LineRange = new ArrayList<Pair<Integer, Integer>>();
+        LineRange.add(L1);
+        LineRange.add(L2);
+        LineRange.add(L3);
+
+
         // Randomly fill boards with tile types
         fillBoard();
 
@@ -122,35 +138,140 @@ public class Board implements BoardInterface {
         }
     }
 
+    // Checks if an Input for Moves for Hero if there is a Hero already in the target tile.
+    public boolean OverHero(Coordinates TestTile) {
+        int test_r = TestTile.getRow();
+        int test_c = TestTile.getCol();
+        for (int i = 0; i < HeroLocations.size(); i++) {
+            Coordinates Hero_Location = HeroLocations.get(i);
+            int r = Hero_Location.getRow();
+            int c = Hero_Location.getCol();
+
+            if (test_r == r && test_c == c) {
+                return true;
+            }
+        }
+        return false;
+    }
+    // Find the all available tile for teleport to, return a list of pair(int, int) for the locations
+    public ArrayList<Pair<Integer, Integer>> getTelLocation(int HeroNum) {
+        Coordinates current = HeroLocations.get(HeroNum);
+        int r = current.getRow();
+        int c = current.getCol();
+        TelLocations  = new ArrayList<Pair<Integer, Integer>>();
+        if (c%3 == 0) {
+            for (int i = r; i < Height; i++) {
+                for (int j = c; j < c+2; j++) {
+                    Coordinates Tile = new Coordinates(i,j);
+                    if (OverHero(Tile)==false) {
+                        TelLocations.add( new Pair<Integer, Integer> (i,j));
+                    }
+                }
+            }
+        } else if (c%3 == 1) {
+            for (int i = r; i < Height; i++) {
+                for (int j = c-1; j < c+1; j++) {
+                    Coordinates Tile = new Coordinates(i,j);
+                    if (OverHero(Tile)==false) {
+                        TelLocations.add(new Pair<Integer, Integer> (i,j));
+                    }
+                }
+            }
+        }
+        return TelLocations;
+    }
+
+    // Print All available locations for teleporting to hero (HeroNumber)
+    public void printTele(int HeroNum){
+        int helper;
+        ArrayList<Pair<Integer, Integer>> tl = getTelLocation(HeroNum);
+        System.out.println("Here are the available teleport positions: ");
+        for (int i = 0; i < tl.size(); i++) {
+            Pair<Integer, Integer> t = tl.get(i);
+            System.out.printf( "%d [ %d, %d ] \n", i+1, t.getKey(), t.getValue());
+        }
+    }
+
+    // Finish the teleport for Hero(turn) to HeroHum at selected tile (TeleNum)
+    public void finishTele(int turn, int HeroNum, int TeleNum) {
+        ArrayList<Pair<Integer, Integer>> tl = getTelLocation(HeroNum);
+        int tr = tl.get(TeleNum).getKey();
+        int tc = tl.get(TeleNum).getValue();
+        MoveHero(turn, new Coordinates(tr, tc));
+    }
+
+    public boolean backTele(int HeroNum) {
+        Coordinates current = HeroLocations.get(HeroNum);
+        int l = LineRange.get(HeroNum).getKey();
+        int r = LineRange.get(HeroNum).getValue();
+        if (current.getCol() == l || current.getCol() == r) {
+            System.out.println("Hero " + (HeroNum+1) + " is already in his home line");
+            return false;
+            }
+        else {
+            System.out.println("Hero " + (HeroNum+1) + " is back his home line");
+            Coordinates H = new Coordinates(Height-1, l);
+            MoveHero(HeroNum, H);
+            return true;
+
+        }
+
+
+//        if (LineNum == 0 || LineNum == 1) {
+//            Coordinates H = new Coordinates(Height-1, 0);
+//            MoveHero(turn, H);
+//
+//        }else if (LineNum == 2 || LineNum == 3) {
+//            Coordinates H = new Coordinates(Height-1, dead1-1);
+//            MoveHero(turn, H);
+//        }
+//        else {
+//            Coordinates H = new Coordinates(Height-1, dead2-2);
+//            MoveHero(turn, H);
+//        }
+    }
+
     // Checks if an Input for Moves is Illegal for the Hero of that turn.
     public boolean IllegalMove(char c, int HeroNum) {
         Coordinates Location = HeroLocations.get(HeroNum);
         switch (c) {
             case 'w':
+                Coordinates w = new Coordinates(Location.getRow()-1, Location.getCol());
                 if (Location.getRow() <= 0)
                     return false;
                 else if (PlayArea[Location.getRow() - 1][Location.getCol()] == Tile.NONPLAYABLE)
                     return false;
+                else if (OverHero(w))
+                    return false;
                 else
                     return true;
             case 'a':
+                Coordinates a = new Coordinates(Location.getRow(), Location.getCol()-1);
                 if (Location.getCol() <= 0)
                     return false;
                 else if (PlayArea[Location.getRow()][Location.getCol() - 1] == Tile.NONPLAYABLE)
                     return false;
+                else if (OverHero(a))
+                    return false;
                 else
                     return true;
             case 'd':
-                if (Location.getRow() == Width - 1)
+                Coordinates d = new Coordinates(Location.getRow(), Location.getCol()+1);
+                if (Location.getRow() >= Width - 1)
                     return false;
                 else if (PlayArea[Location.getCol()][Location.getCol() + 1] == Tile.NONPLAYABLE)
+                    return false;
+                else if (OverHero(d))
                     return false;
                 else
                     return true;
             case 's':
-                if (Location.getRow() == Height - 1)
+                Coordinates s = new Coordinates(Location.getRow()+1, Location.getCol());
+                if (Location.getRow() >= Height - 1)
                     return false;
                 else if (PlayArea[Location.getRow() + 1][Location.getCol()] == Tile.NONPLAYABLE)
+                    return false;
+                else if (OverHero(s))
                     return false;
                 else
                     return true;
@@ -158,17 +279,6 @@ public class Board implements BoardInterface {
         }
         return false;
 
-    }
-
-    // Check Tail effects using this method.
-    public void CheckTail(int HeroNum) {
-        Coordinates Location = HeroLocations.get(HeroNum);
-        int c = Location.getCol();
-        int r = Location.getRow();
-
-        if (PlayArea[r][c] == Tile.BUSH) {
-
-        }
     }
 
     // Get board to display using this method.
@@ -216,7 +326,7 @@ public class Board implements BoardInterface {
     }
 
     // Convert Character Input to Coordinate type for easy movement.
-    public Coordinates convertMove(int HeroNum, char c, int tel_sign) {
+    public Coordinates convertMove(int HeroNum, char c) {
         Coordinates current = HeroLocations.get(HeroNum);
         switch (c) {
             case 'w':
@@ -227,14 +337,15 @@ public class Board implements BoardInterface {
                 return new Coordinates(current.getRow(), current.getCol() + 1);
             case 's':
                 return new Coordinates(current.getRow() + 1, current.getCol());
-            case 't':
-                Coordinates helper = HeroLocations.get(tel_sign);
-                current = helper;
+//            case 't':
+//                Coordinates helper = HeroLocations.get(tel_sign);
+//                current = helper;
         }
         current.setRow(Height-1);
         return current;
 //        return new Coordinates(current.getRow() + 1, current.getCol());
     }
+
 
     private static void createOutterCell(Tile[][] map, List<StringBuilder> printableMap, int row, int col) {
         switch (map[row / 3][col]) {
@@ -286,7 +397,7 @@ public class Board implements BoardInterface {
         for (int i = 0; i < l.size(); i++) {
             if (l.get(i).equals(c)) {
                 // ret = heroParty.getHero(i).MapRepresent();
-                return "H" + Integer.toString(i);
+                return "H" + Integer.toString(i+1);
             }
         }
         return "  ";
@@ -312,10 +423,15 @@ public class Board implements BoardInterface {
 
     }
 
-    // Testing Code for the Board class.
-//    public static void main(String[] args) {
-//        Board world = new Board(8, 8);
-//        world.Display();
+//    public Coordinates IllgealTeleport(int turn, int helper) {
+//        Coordinates helper_loc = HeroLocations.get(helper);
+//        if (Coordinates(helper_loc.getRow(), helper_loc.getCol() - 1) ){
+//
+//        }
+//
+//        return new Coordinates(helper_loc.getRow(), helper_loc.getCol() + 1);
+//
+//        return new Coordinates(helper_loc.getRow() + 1, helper_loc.getCol());
 //    }
 
 }

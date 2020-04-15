@@ -19,6 +19,8 @@ public abstract class Hero extends Combatant {
     // they are put in. Helps with identification
     // on Map.
     private int HeroNum;
+    private Tile CurrTile;
+    private int Boost;
 
     public Hero(String name, int mp, int str, int agi, int dex, int Money, int exp) {
         super(name, 1);
@@ -35,6 +37,8 @@ public abstract class Hero extends Combatant {
         this.WeaponSlot = null;
         this.ArmorSlot = null;
         this.rd = new Random();
+        this.Boost = 0;
+        this.CurrTile = Tile.COMMON;
         sc = new Scanner(System.in);
 
     }
@@ -315,6 +319,63 @@ public abstract class Hero extends Combatant {
         this.setFainted(false);
         this.setHp(getLevel() * 100 / 2);
         this.setMoney(this.getMoney() / 2);
+    }
+
+    public void respawn() {
+        setFainted(false);
+        setHp(getLevel() * 100);
+        setMp(getLevel() * 300);
+    }
+
+    public void TileBoost(Tile t) {
+        if (t == CurrTile) {
+            return;
+        }
+        // We first remove the Buff of the previous Tile.
+        switch (CurrTile) {
+            case COMMON:
+                break;
+            case NONPLAYABLE:
+                break;
+            case NEXUS:
+                break;
+            case KOULOU:
+                Str -= Boost;
+                break;
+            case CAVE:
+                Agi -= Boost;
+                break;
+            case BUSH:
+                Dex -= Boost;
+                break;
+        }// calculate Boost value then swap the currTile
+        switch (t) {
+            case COMMON:
+                break;
+            case NONPLAYABLE:
+                break;
+            case NEXUS:
+                break;
+            case KOULOU:
+                Boost = (int) Math.round(Str * 0.1);
+                Str += Boost;
+                System.out.printf("%s's Strength boosted \n", getName());
+                break;
+            case CAVE:
+                Boost = (int) Math.round(Agi * 0.1);
+                Agi += Boost;
+                System.out.printf("%s's Agility boosted \n", getName());
+                break;
+            case BUSH:
+                Boost = (int) Math.round(Dex * 0.1);
+                Dex += Boost;
+                System.out.printf("%s's Dexterity boosted \n", getName());
+                break;
+
+        }
+        CurrTile = t;
+        return;
+
     }
     // All refactored into generic Method sellItem()
 

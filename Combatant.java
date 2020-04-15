@@ -3,6 +3,7 @@ public abstract class Combatant {
     private int Level;
     private boolean fainted;
     private int currHp;
+    private Coordinates coordinates;
 
     public Combatant(String Name, int Level) {
         this.Name = Name;
@@ -10,6 +11,14 @@ public abstract class Combatant {
         this.fainted = false;
         this.currHp = 100 * getLevel();
 
+    }
+
+    public void setCoordinates(Coordinates c) {
+        this.coordinates = c;
+    }
+
+    public Coordinates getCoordinates() {
+        return coordinates;
     }
 
     public String getName() {
@@ -40,5 +49,5 @@ public abstract class Combatant {
         return this.currHp;
     }
 
-//    public abstract String MapRepresent();
+    // public abstract String MapRepresent();
 }
